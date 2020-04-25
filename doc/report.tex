@@ -1,0 +1,71 @@
+\documentclass[a4paper,12pt,english]{article}
+ 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+\usepackage{hyperref}
+\def\UrlBreaks{\do\/\do-}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage[table,xcdraw]{xcolor}
+
+\usepackage[inline]{enumitem} % inline lists
+\usepackage{caption}
+\usepackage{subcaption}
+\newcommand{\infra}{\emph{infra}}
+
+\begin{document}
+
+\begin{titlepage}
+	\centering
+	\fbox{\begin{minipage}{\textwidth}
+	\centering
+	\vspace{0.3cm}
+    {\scshape\LARGE\bfseries Project Report\par}
+	\vspace{0.2cm}
+	{\Large\bfseries Automated Essay Scoring \par}
+	\vspace{0.3cm}
+    \end{minipage}}
+	
+	\vfill
+	\includegraphics[width=0.5\textwidth]{fig/psl.jpg}\par\vspace{0cm}
+	{\scshape\Large IASD Master \par}
+	\vfill
+	{\Large Pierre-François \textsc{Massiani}\par}
+	{\Large Guillaume \textsc{Le Moing}\par}
+	\vfill
+	work completed during the\par
+	Natural Language Processing class
+	\vfill
+    {\large April 25\textsuperscript{th}  , 2020\par}
+\end{titlepage}
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\subsection{Automated essay scoring task}
+
+\section{A Neural Network based approach}
+
+\section{Experiments}
+
+\subsection{Implementation}
+
+Our project was implemented in Python. The code is available on a Github repository at this address:
+
+\begin{center}
+	\url{https://github.com/16lemoing/automated-essay-scoring/} 
+\end{center}
+
+\subsection{Dataset}
+
+\section{Conclusion}
+
+\bibliography{ref} 
+\bibliographystyle{ieeetr}
+\addcontentsline{toc}{section}{References}
+
+\end{document}
+
