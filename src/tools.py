@@ -156,10 +156,10 @@ def get_kappa(scores, pred_scores, sets):
         set_mask = (sets == idx)
         set_scores = scores[set_mask]
         set_pred_scores = pred_scores[set_mask]
-        set_kappa = cohen_kappa_score(set_scores, set_pred_scores)
+        set_kappa = cohen_kappa_score(set_scores, set_pred_scores, weights = 'quadratic')
         i_kappa[idx] = set_kappa
         set_length = np.sum(set_mask)
         w_kappa += set_length * set_kappa
     w_kappa /= len(scores)
-    g_kappa = cohen_kappa_score(scores, pred_scores)
+    g_kappa = cohen_kappa_score(scores, pred_scores, weights = 'quadratic')
     return w_kappa, g_kappa, i_kappa
