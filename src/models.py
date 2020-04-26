@@ -2,6 +2,7 @@
 
 import torch
 import torch.nn as nn
+from torch.nn.utils.rnn import pack_padded_sequence
 
 def create_embedding_layer(weights, non_trainable = False):
     num_embeddings, embedding_dim = weights.size()
@@ -52,8 +53,6 @@ class Dense_NN(nn.Module):
         x = self.embedding(x)
         x = torch.mean(x, dim = 1)
         if self.use_features:
-            print(x.shape)
-            print(feat.shape)
             x = torch.cat((x, feat), dim = 1)
         x = torch.relu(self.fc_1(x))
         x = self.dropout(x)
