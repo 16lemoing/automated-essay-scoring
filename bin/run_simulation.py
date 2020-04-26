@@ -55,7 +55,7 @@ def main(args):
         valid_sets = [essay_sets[i] for i in valid_idx]
         valid_features = [essay_features[i] for i in valid_idx]
         
-        device = torch.device("cuda")
+        device = torch.device(args.device)
         
         train_encoded, train_lengths = get_encoded_data(train_contents, train_scores,
                                                         vocab, max_essay_len, args.remove_stopwords)
@@ -124,6 +124,8 @@ if __name__ == "__main__":
                         "('bin/compute_x_features.py' should have been executed beforehand)")
     parser.add_argument('--scale_features', action = 'store_true',
                         help = "to scale extra features so they have 0 mean and unit variance")
+    parser.add_argument('--device', default = 'cpu',
+                        help = "any of ['cpu', 'cuda']")
     parser.add_argument('--model_type', default = 'dense',
                         help = "any of ['dense', 'lstm'] (neural network model)")
     parser.add_argument('--batch_size', type = int, default = 64,
