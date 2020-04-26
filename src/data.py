@@ -132,10 +132,11 @@ class EssayDataset(Dataset):
         x = torch.tensor(self.encoded_essays[idx]).long()
         lengths = torch.tensor(self.essay_lengths[idx]).long()
         scores = torch.tensor(self.essay_scores[idx]).float()
+        feat = self.essay_features[idx]
         if self.scaler is not None:
-            feat = self.scaler.transform(self.essay_features[idx])
-        else:
-            feat = self.essay_features[idx]
+            if len(feat.shape) == 1:
+                feat = feat.reshape(1, -1)
+            feat = self.scaler.transform(feat).squeeze()
         feat = torch.tensor(feat).float()
         return x, lengths, scores, feat
     
