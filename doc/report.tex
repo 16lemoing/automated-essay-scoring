@@ -14,6 +14,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \newcommand{\infra}{\emph{infra}}
+\newcommand{\TODO}{\fbox{\textcolor{red}{TODO}}}
 
 \begin{document}
 
@@ -45,23 +46,129 @@
 
 \section{Introduction}
 
-\subsection{Automated essay scoring task}
+This is the final project for the « Natural Language Processing » class of Master IASD (Artificial Intelligence, Systems, Data), a joint PSL University Master program hosted by Paris-Dauphine, École normale supérieure, and MINES ParisTech.
 
-\section{A Neural Network based approach}
-
-\section{Experiments}
-
-\subsection{Implementation}
+In this project we propose and compare different neural network architectures as well as learning strategies for the automated essay scoring task.
+We test our algorithms using the data from the ASAP competition on Kaggle~\cite{kaggle} sponsored by The Hewlett Foundation.
 
 Our project was implemented in Python. The code is available on a Github repository at this address:
-
 \begin{center}
 	\url{https://github.com/16lemoing/automated-essay-scoring/} 
 \end{center}
+Instructions are included in the repository to run the code on your machine.
+
+\subsection{The automated essay scoring task}
+\TODO{décrire succintement la tâche à accomplir : on donnera les détails dans la partie dataset}
+
+\subsection{Related work}
+\TODO{citer 4,5 travaux qui ont été publiés là dessus}
+
+\section{A Neural Network based approach}
+
+We choose to rely on neural networks for this task.
+We describe in this section the whole pipeline from raw essays to the prediction of the scores.
+For each part, we present different options that are included in this project.
+
+\subsection{Words embedding}
+Essays have to be turned into vectors of numbers before being fed to a neural network.
+One popular strategy is to assign a vector to every single word in the text.
+The required dimension for the vectors depends on the richness of the vocabulary (both in quantity and lexical diversity).
+\subsubsection{Random}
+This is the most basic embedding.
+We assign to each word of the vocabulary a vector of random samples from a normal (Gaussian) distribution.
+\subsubsection{Word2Vec}
+We propose to train a Word2Vec model~\cite{mikolov2013efficient} on the sentences extracted from the training essays.
+This model learns meaningful embeddings by trying to guess a word from its context (a few words before and after in the sentence).
+To do this each word of the context is turned into a vector from which the prediction is made.
+Those vectors are what we use as embeddings once the model is trained.
+Each set of essays deals with a different topic.
+We hope to capture topic-related knowledge from the corpora by learning the embedding directly from the set of training essays.
+\subsubsection{GloVe}
+We also propose a different strategy for getting word embeddings using GloVe~\cite{pennington2014glove}.
+The particularity of GloVe embedding is that there are linear substructures between words sharing semantic aspects.
+For this embedding, we decide not to train the GloVe model from scratch but use a pre-trained model on large-scale corpora such as Wikipedia instead.
+
+\subsection{Essay preprocessing}
+We present here a few preprocessing methods that can help the learning process.
+\subsubsection{Spelling errors correction}
+Reading a few essays, we realised that there were lots of misspelled words in the essays.
+This can impair the prediction performance because we cannot provide a meaningful embedding to misspelled words and we have a much larger vocabulary.
+It would have come in handy to have a python wrapper for a correction tool such as LanguageTool which handles both syntaxic and grammatical errors.
+Instead we used pyspellchecker package which gives a list of the most plausible correction candidates for each of the misspelled words (but do not consider the sentence as a whole).
+\subsubsection{Stopwords removal}
+There are some very common words, called stopwords that usually do not add much meaning to the sentence.
+A common preprocessing step in natural language processing consists in removing these words that can pollute the learning process.
+However, in our case it is unclear whether we should remove these words or not.
+For example we need to take them into account when evaluating the gramatical correctness of a sentence.
+That being said, it would be surprising that our model learns what is a grammaticaly correct sentence from such a small corpus.
+
+\subsection{Essay processing}
+We describe here how the essays are transformed so that they can be understood by a neural network.
+\subsubsection{Word tokenization}
+The first step is to transform essays into tokens (isolated words).
+To do that we transform every special character into a space symbol and then split the essay at every occurence of the space symbol.
+\subsubsection{Essay padded encoding}
+Then we assign to each word its index in the vocabulary. This index will be used as a key when retrieving the word embedding.
+To enable batch-learning we pad every essay so that it matches the length of the longest essay.
+
+\subsection{Multitask model}
+The dataset contains multiple essay tasks which are scored on different scales.
+This makes it difficult to learn all tasks jointly.
+However this can be addressed by normalizing the scores.
+\subsubsection{Score normalization}
+We rescale all the scores so that they fall into $[0,1]$, by applying this simple linear transformation:
+\begin{equation}
+s_{norm} = (s - s_{min}) / (s_{max} - s_{min})
+\end{equation}
+\subsubsection{Score recovering}
+For the evaluation we need to recover the score in its original scale.
+To do this we apply the inverse transformation and then round the obtained value to the nearest score value in the corresponding set.
+
+\subsection{Extra-features computation}
+When predicting a score for an essay it is possible to include higher-level features to give some insights about characteristics that are hard to grasp for the neural network.
+First, during the spelling correction, we can compute the number of misspelled words for each essay. Doing this, the model can be fed the corrected essays and have a better understanding of the meaning while still being able to judge on this aspect.
+We also extract part of speech indicators from the essays (number of nouns, adjectives, verbs...), usage of ponctuation (number of question marks, exclamation marks, commas...), semantic diversity (number of semantic roots that were used to build the words in the essay), quotations (counting quotation marks, references to organizations, locations, people...).
+
+\subsection{Models architecture}
+We propose highly customizable neural networks to optimize there architecture based on the validation results.
+\subsubsection{Dense}
+First, we propose a four-layer dense neural network.
+The first layer is the embedding layer.
+We then take the mean of all the embedding vectors and feed it to a series of dense layers.
+We use ReLu activation functions except for the output layer which has a Sigmoid activation when the scores are rescaled to $[0,1]$.
+There is the possibility to add some dropouts between layers to prevent overfitting.
+The dense model can be fed encoded essays, encoded essays + extra-features, extra-features alone.
+This way we can evaluate the predictive power of each individual part.
+\subsubsection{LSTM}
+The dense neural network merges all word embeddings into a single vector.
+It does not take into account the order in which the words appear in the essay.
+We introduce an LSTM model so that we can work directly with sequenced data.
+Our LSTM model is made of a custom number of layers and can include dropout.
+We also add a few fully connected layers so that we can make use of the extra-features if they are provided.
+\subsubsection{CNN}
+\TODO{description du CNN}
+
+\section{Experiments}
+We conduct a thorough analysis to compare and discuss all the proposed learning strategies.
 
 \subsection{Dataset}
+\TODO{description détaillée du dataset}
+
+\subsection{Validation metrics}
+\TODO{présentation de la loss MSE}
+\TODO{présentation du quadratic weighted kappa}
+
+\subsection{Experimental protocol}
+To compare all the configurations we use 5-fold cross-validation on the training data (for each fold the training data is split into subtraining and subvalidation sets)
+The best epoch identifed by looking at the lowest loss value on the subvalidation set.
+We save the average validation metrics across all folds corresponding to the best epoch for each fold.
+When all configurations have been cross-validated we test the best cpnfiguration on the test data (which remained unseen up to this point).
+
+\subsection{Results}
+\TODO{courbes et commentaires}
 
 \section{Conclusion}
+\TODO{}
 
 \bibliography{ref} 
 \bibliographystyle{ieeetr}
