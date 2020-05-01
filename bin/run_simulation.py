@@ -14,7 +14,7 @@ from tools import Logger
 from glove import get_glove
 from word2vec import get_word2vec
 from data import get_data, scan_essays, get_embedding_weights, get_encoded_data, EssayDataset
-from models import Dense_NN, LSTM_NN
+from models import Dense_NN, Dense_feat_NN, LSTM_NN
 from train import train_model
 
 def main(args):
@@ -74,6 +74,8 @@ def main(args):
         if args.model_type == "dense":
             model = Dense_NN(torch.tensor(embedding_weights), args.dim, args.normalize_scores,
                              args.use_features, extra_dim, args.dropout, args.hidden_size).to(device)
+        elif args.model_type == "dense_feat":
+            model = Dense_feat_NN(args.normalize_scores, extra_dim, args.dropout, args.hidden_size).to(device)
         elif args.model_type == "lstm":
             model = LSTM_NN(torch.tensor(embedding_weights), args.dim, args.normalize_scores,
                             args.use_features, extra_dim, args.dropout, args.hidden_size,
@@ -127,7 +129,7 @@ if __name__ == "__main__":
     parser.add_argument('--device', default = 'cpu',
                         help = "any of ['cpu', 'cuda']")
     parser.add_argument('--model_type', default = 'dense',
-                        help = "any of ['dense', 'lstm'] (neural network model)")
+                        help = "any of ['dense', 'dense_feat', 'lstm'] (neural network model)")
     parser.add_argument('--batch_size', type = int, default = 64,
                         help = "size of batches to be processed in neural network model")
     parser.add_argument('--lr', type = float, default = 0.01,
