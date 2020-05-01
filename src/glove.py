@@ -8,23 +8,6 @@ import numpy as np
 import pickle
 from tqdm import tqdm
 
-def download_glove(glove_dir, glove_type):
-    """
-    Download glove embedding of chosen type and unzip it in glove dir
-
-    Parameters
-    ----------
-    glove_dir : string (path to the folder where is the embedding text file, output files will be saved under the same folder)
-    glove_type : string (identifier for selected glove file)
-    """
-    
-    print(f"downloading glove {glove_type} to {glove_dir}")
-    zip_file_url = f"http://nlp.stanford.edu/data/wordvecs/glove.{glove_type}.zip"
-    r = requests.get(zip_file_url)
-    assert r.ok, f"failed to download {zip_file_url}" 
-    z = zipfile.ZipFile(io.BytesIO(r.content))
-    z.extractall(glove_dir)
-
 def preprocess_glove(glove_dir, glove_type, dim):
     """
     Parse glove embedding vectors from text file and save them for fast access

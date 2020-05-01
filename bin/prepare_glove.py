@@ -14,10 +14,6 @@ def main(args):
     if not glove_dir.exists():
         glove_dir.mkdir()
     
-    # Download glove if needed
-    if args.download:
-        download_glove(glove_dir, args.glove_type)
-    
     # Preprocess glove embedding
     for dim in args.dims:
         preprocess_glove(glove_dir, args.glove_type, dim)
@@ -26,9 +22,6 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--download', action = 'store_true',
-                        help = "to download glove from web url "\
-                        "(otherwise you need to manually download archive and unzip it in 'data/glove/' dir)")
     parser.add_argument('--glove_type', default = '6B',
                         help = "any of ['42B.300d', '840B.300d', '6B', 'twitter.27B'] "\
                         "(see updated list of available types at https://github.com/stanfordnlp/GloVe)")
