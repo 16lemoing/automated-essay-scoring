@@ -5,6 +5,7 @@ from tools import get_kappa
 def train_model(model, device, lr, epochs, train_dataloader, valid_dataloader = None, logger = None):
     optimizer = torch.optim.Adam(model.parameters(), lr = lr) 
     criterion = nn.MSELoss()
+    best_loss = 1e15
     for ep in range(epochs):
         
         # train
@@ -36,12 +37,17 @@ def train_model(model, device, lr, epochs, train_dataloader, valid_dataloader = 
         if valid_dataloader is not None and logger is not None:
             logger.log(valid_loss = valid_loss, valid_weighted_kappa = valid_w_kappa, valid_global_kappa = valid_g_kappa, valid_individual_kappa = valid_i_kappa)
         
+        # save best weights
+        if valid_loss < best_loss:
+            best_loss = valid_loss
+            logger.checkpoint_weights(model)
+        
         # display
         if (ep + 1) % 5 == 0:
             valid_string = f", (valid) loss {valid_loss: .3f}, weighted kappa {valid_w_kappa: .3f}, global kappa {valid_g_kappa: .3f}, individual kappa {list(valid_i_kappa.values())}" if valid_dataloader is not None else ""
             print(f"Ep[{ep + 1}/{epochs}] (train) loss {sum_loss / total: .3f}{valid_string}")
 
-def evaluate_model(model, device, dataloader, criterion):
+def evaluate_model(model, device, dataloader, criterion = nn.MSELoss):
     model.eval()
     total = 0
     sum_loss = 0

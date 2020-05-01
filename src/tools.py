@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 class Logger():
     
-    def __init__(self, log_dir, name, args):
+    def __init__(self, log_dir, name, args, save_best_weights = False):
         
         # Build directories
         self.log_dir = log_dir
@@ -19,6 +19,7 @@ class Logger():
         self.id_plot_dir = self.plot_dir / self.id
         if not self.id_plot_dir.exists():
             self.id_plot_dir.mkdir()
+        self.save_best_weights = save_best_weights
         self.name = name
         self.args = vars(args)
         self.fold = -1
@@ -144,6 +145,11 @@ class Logger():
                 kappa = 0
             valid_individual_kappa[i] = kappa
         return train_loss, valid_loss, valid_weighted_kappa, valid_global_kappa, valid_individual_kappa
+    
+    def checkpoint_weights(self, model):
+        if self.save_best_weights:
+            weights_file = self.id_plot_dir / f"fold{fold}_weights.pth"
+            torch.save(model.state_dict(), weights_file)
 
 def get_kappa(scores, pred_scores, sets):
     scores = np.array(scores)
