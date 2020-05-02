@@ -231,10 +231,19 @@ All the results for the experiments are saved as things progress in an excel spr
 \vspace*{-1.5cm}
 \end{center}
 
-\textbf{Word embeddings comparison} Finally, we compare all the proposed word embedding strategies. It turns out that the most successful word embedding strategy is the Word2Vec embedding trained on the essay sentences. We think this is due to specific words and contexts being good indicators for the value of an essay. This strategy leverages the whole corpus thus having task specific knowledge for each of the essay tasks.
+\textbf{Word embeddings comparison} We compare all the proposed word embedding strategies. It turns out that the most successful word embedding strategy is the Word2Vec embedding trained on the essay sentences. We think this is due to specific words and contexts being good indicators for the value of an essay. This strategy leverages the whole corpus thus having task specific knowledge for each of the essay tasks.
+
 \begin{center}
 \vspace*{-1.5cm}
 \includegraphics[width=0.85\textwidth]{fig/word_embeddings.pdf}
+\vspace*{-1.5cm}
+\end{center}
+
+\textbf{Test results} We show the performance of the best model on the test set compared to the performance on the validation set. The individual quadratic weighted kappa are equivalent for all sets except the last one. The reason for this is that the score range is the largest for the 8\textsuperscript{th} set and the kappa metric is expecting identical scores to count true positives. So even if the scores are close the kappa can be low. Moreover the 8\textsuperscript{th} set contains less training samples so it is harder to generalize to unseen essays for this set. All in all, the overall performance is quite satisfying and comparable to other works dedicated to this Kaggle competition.
+
+\begin{center}
+\vspace*{-1.5cm}
+\includegraphics[width=0.85\textwidth]{fig/test.pdf}
 \vspace*{-1.5cm}
 \end{center}
 
