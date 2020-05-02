@@ -151,7 +151,14 @@ We introduce an LSTM model so that we can work directly with sequenced data.
 Our LSTM model is made of a custom number of layers and can include dropout.
 We also add a few fully connected layers so that we can make use of the extra-features if they are provided.
 \subsubsection{CNN}
-\TODO{description du CNN}
+Pursuing on our considerations on the strucutre of the text, we also propose a convolutional model. Convolutional architectures are very popular in image analysis tasks, because they can detect local patterns in the input data, and can adapt to different input sizes. Our architecture is inspired from the famous work of Kim et al.\cite{kim2014convolutional}. The embeddings are fed into three parallel 2D-convolution layers with kernels of different shapes. Our implementation chose kernels of size 3,4 and 5 along the time axis, and covering the whole embedding (see Figure~\ref{kim2014figure}). After that, we apply max pooling along the time axis for each channel, and feed the resulting nodes into a fully connected layer. This architecture has the advantage of being able to adapt to any essay length (thanks to the pooling), and should be able to detect syntactical richness thanks to the convolutional layers that shed light onto the local structure of the input.
+\begin{figure}
+	\centering
+	% \hspace{-1.5cm}
+	\includegraphics[width=\textwidth]{fig/kim2014fig.png}
+	\caption{The architecture of the convolutional network\cite{kim2014convolutional}}
+	\label{kim2014figure}
+\end{figure}
 
 \section{Experiments}
 We conduct a thorough analysis to compare and discuss all the proposed learning strategies.
