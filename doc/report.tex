@@ -13,6 +13,7 @@
 \usepackage[inline]{enumitem} % inline lists
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{float}
 \newcommand{\infra}{\emph{infra}}
 \newcommand{\TODO}{\fbox{\textcolor{red}{TODO}}}
 
@@ -62,6 +63,12 @@ Instructions are included in the repository to run the code on your machine.
 
 \subsection{Related work}
 \TODO{citer 4,5 travaux qui ont été publiés là dessus}
+%par ex
+%https://cs224d.stanford.edu/reports/huyenn.pdf
+%https://pdfs.semanticscholar.org/21d8/22e9f0783d79ab19563d36c006f202b508e0.pdf
+%http://cs229.stanford.edu/proj2013/SongZhao-AutomatedEssayScoring.pdf
+%https://github.com/Turanga1/Automated-Essay-Scoring/blob/master/Automatic%20Student%20Essay%20Assessment.pdf
+%https://github.com/m-chanakya/AutoEssayGrading/blob/master/papers/paper1.pdf
 
 \section{A Neural Network based approach}
 
@@ -157,15 +164,81 @@ We conduct a thorough analysis to compare and discuss all the proposed learning 
 \subsection{Validation metrics}
 \TODO{présentation de la loss MSE}
 \TODO{présentation du quadratic weighted kappa}
+%dire que c'est la métrique que tout le monde utilise (dans le challenge aussi)
+%on prend la somme pondérée du Quadratic Weighted Kappa pour chaque type d'essai (1 à 8) pour avoir la valeur finale
+%on peut s'inspirer de
+%https://cs224d.stanford.edu/reports/huyenn.pdf
+%par ex
 
 \subsection{Experimental protocol}
 To compare all the configurations we use 5-fold cross-validation on the training data (for each fold the training data is split into subtraining and subvalidation sets)
-The best epoch identifed by looking at the lowest loss value on the subvalidation set.
+The best epoch is found by looking at the lowest loss value on the subvalidation set.
 We save the average validation metrics across all folds corresponding to the best epoch for each fold.
-When all configurations have been cross-validated we test the best cpnfiguration on the test data (which remained unseen up to this point).
+When all configurations have been cross-validated we test the best configuration on the test data (which remained unseen up to this point).
 
 \subsection{Results}
-\TODO{courbes et commentaires}
+All the results for the experiments are saved as things progress in an excel spreadsheet. The raw file containing all these results can be found in the Github repository alongside this report.
+
+\textbf{Pipeline optimization} First we show incremental results of pipeline features optimization compared to a baseline method. The baseline method corresponds to the set of default arguments (Word2Vec embedding of dim 50, shallow fully-connected model without dropout, no extra features, no special data preprocessing, learning from all essay sets at once). We found that the baseline method was rather unstable (sometimes giving decent results, sometimes not converging at all). Normalizing score so that they fit in $[0, 1]$ enabled a great improvement of the quadratic weighted kappa metric compared to the baseline method. Spelling correction led to maginally better scores. Extra-features insertion led to more instabilities but adding this together with feature scaling solved this issue and further improved the results. Changing the embedding dimension from 50 to 300 and removing stopwords helped improving the validation metrics even more.
+
+\begin{center}
+\vspace*{-1.5cm}
+\includegraphics[width=0.85\textwidth]{fig/opt_pip_feat.pdf}
+\vspace*{-1.5cm}
+\end{center}
+
+\textbf{Hyperparameters tuning} Then we focused on tuning the key learning hyperparameters. For the choice of the learning rate, two values ($0.001$ and $0.01$) led to similar results. We selected $0.01$ because it was slightly better. For the batch size, results indicated that we should select either a small batch size or a very large one. As it speeds up the learning process we decided to go with a rather large batch size ($256$).
+
+\begin{center}
+\vspace*{-1.5cm}
+\includegraphics[width=0.85\textwidth]{fig/tune_lr.pdf}
+\vspace*{-1.5cm}
+\end{center}
+
+\begin{center}
+\vspace*{-1.5cm}
+\includegraphics[width=0.85\textwidth]{fig/tune_bs.pdf}
+\vspace*{-1.5cm}
+\end{center}
+
+\textbf{Dense model optimization} We tried various architecture for the fully connected model. We show the results for different dropout values and number of parameters. The results shown correspond to learning from embedded essays as well as extra-features. We also tried learning solely from extra-features a reached a quadratic weighted kappa value of $0.678$ which is far from the best results we can get when combining embedded essays and extra-features. The best configuration for the dense model is obtained with hidden layers of size $300$ and $128$ and dropout of $0.2$.
+
+\begin{center}
+\vspace*{-1.5cm}
+\includegraphics[width=0.85\textwidth]{fig/tune_dense_arch.pdf}
+\vspace*{-1.5cm}
+\end{center}
+
+\textbf{LSTM model optimization} We conducted similar experiments for our LSTM model. The best LSTM model was obtained with hidden layer size of $100$ for the recurrent units and $16$ for the fully connected part and droupout value of $0.2$. We then tried deeper model architectures by stacking recurrent units on top of each other. Results show that a depth of $4$ is optimal in our case.
+
+\begin{center}
+\vspace*{-1.5cm}
+\includegraphics[width=0.85\textwidth]{fig/tune_lstm_arch_1.pdf}
+\vspace*{-1.5cm}
+\end{center}
+
+\begin{center}
+\vspace*{-1.5cm}
+\includegraphics[width=0.85\textwidth]{fig/tune_lstm_arch_2.pdf}
+\vspace*{-1.5cm}
+\end{center}
+
+\textbf{Joint vs individual models} Multitask models are increasingly popular because achieving a good performance level for one task can help tackling other tasks. However, when we compare the results for our joint model compared to the results of individual models we achieve similar performance. Indeed, the quadratic weighted kappa for the joint model is $0.741$ and $0.744$ when compiling results together for individual models. The small difference is due to the joint model not being very good on the $8$\textsuperscript{th} essay set due to size imbalance between sets. Nevertheless, we prefer to keep the joint model as it is much faster to train and less likely to overfit.
+
+\begin{center}
+\vspace*{-1.5cm}
+\includegraphics[width=0.85\textwidth]{fig/joint_vs_indiv.pdf}
+\vspace*{-1.5cm}
+\end{center}
+
+\textbf{Word embeddings comparison} Finally, we compare all the proposed word embedding strategies. It turns out that the most successful word embedding strategy is the Word2Vec embedding trained on the essay sentences. We think this is due to specific words and contexts being good indicators for the value of an essay. This strategy leverages the whole corpus thus having task specific knowledge for each of the essay tasks.
+\begin{center}
+\vspace*{-1.5cm}
+\includegraphics[width=0.85\textwidth]{fig/word_embeddings.pdf}
+\vspace*{-1.5cm}
+\end{center}
+
+\TODO{courbes et commentaires pour CNN}
 
 \section{Conclusion}
 \TODO{}
