@@ -14,23 +14,23 @@ from tools import Logger
 from glove import get_glove
 from word2vec import get_word2vec
 from data import get_data, scan_essays, get_embedding_weights, get_encoded_data, EssayDataset
-from models import Dense_NN, Dense_feat_NN, LSTM_NN
+from models import Dense_NN, Dense_feat_NN, LSTM_NN, Convolutional_NN
 from train import train_model
 
 def main(args):
-    
+
     data_dir = Path("..") / "data"
     glove_dir = data_dir / 'glove'
     log_dir = Path("..") / "log"
     logger = Logger(log_dir, "simulation", args)
     train_file = data_dir / args.train_file
-    
+
     print("loading data")
     data = get_data(train_file, args.normalize_scores, args.set_idxs,
                     args.features, args.use_features, args.correct_spelling)
     essay_contents, essay_scores, essay_sets, essay_features, set_scores = data
     vocab, max_essay_len = scan_essays(essay_contents, args.remove_stopwords)
-    
+
     print(f"preparing {args.embedding_type} embedding")
     if args.embedding_type == "word2vec":
         word2vec = get_word2vec(essay_contents, args.remove_stopwords, args.dim)
@@ -40,7 +40,7 @@ def main(args):
         embedding_weights = get_embedding_weights(vocab, glove, args.dim)
     elif args.embedding_type == "random":
         embedding_weights = get_embedding_weights(vocab, {}, args.dim)
-    
+
     print("training using cross validation")
     cross_validation_folds = KFold(n_splits = 5, shuffle = True)
     for count, (train_idx, valid_idx) in enumerate(cross_validation_folds.split(essay_contents)):
@@ -54,9 +54,9 @@ def main(args):
         valid_scores = np.array([essay_scores[i] for i in valid_idx])
         valid_sets = [essay_sets[i] for i in valid_idx]
         valid_features = [essay_features[i] for i in valid_idx]
-        
+
         device = torch.device(args.device)
-        
+
         train_encoded, train_lengths = get_encoded_data(train_contents, train_scores,
                                                         vocab, max_essay_len, args.remove_stopwords)
         valid_encoded, valid_lengths = get_encoded_data(valid_contents, valid_scores,
@@ -69,7 +69,7 @@ def main(args):
                                      set_scores, args.use_features, args.scale_features)
         train_dataset.fit_scaler()
         valid_dataset.set_scaler(train_dataset.get_scaler())
-        
+
         extra_dim = len(args.features) if args.use_features else 0
         if args.model_type == "dense":
             model = Dense_NN(torch.tensor(embedding_weights), args.dim, args.normalize_scores,
@@ -80,16 +80,19 @@ def main(args):
             model = LSTM_NN(torch.tensor(embedding_weights), args.dim, args.normalize_scores,
                             args.use_features, extra_dim, args.dropout, args.hidden_size,
                             args.num_layers, args.is_bidirectional, args.use_variable_length).to(device)
-        
+        elif args.model_type == 'conv':
+            model = Convolutional_NN(torch.tensor(embedding_weights),args.dim,args.normalize_scores,
+                            args.use_features,extra_dim,args.dropout,args.channel_sizes).to(device)
+
         train_dataloader = DataLoader(train_dataset, batch_size = args.batch_size, num_workers = 5, shuffle = True)
         valid_dataloader = DataLoader(valid_dataset, batch_size = args.batch_size, num_workers = 5, shuffle = False)
-        
+
         train_model(model, device, args.lr, args.epochs, train_dataloader, valid_dataloader, logger)
-    
+
     print(f"saving results to {log_dir} (id: {logger.id})")
     logger.save_plots()
     logger.update_csv()
-    
+
     print("done")
 
 if __name__ == "__main__":
@@ -129,7 +132,7 @@ if __name__ == "__main__":
     parser.add_argument('--device', default = 'cpu',
                         help = "any of ['cpu', 'cuda']")
     parser.add_argument('--model_type', default = 'dense',
-                        help = "any of ['dense', 'dense_feat', 'lstm'] (neural network model)")
+                        help = "any of ['dense', 'dense_feat', 'lstm', 'conv'] (neural network model)")
     parser.add_argument('--batch_size', type = int, default = 64,
                         help = "size of batches to be processed in neural network model")
     parser.add_argument('--lr', type = float, default = 0.01,
@@ -137,7 +140,7 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', type = int, default = 50,
                         help = "number of epochs to run")
     parser.add_argument('--dropout', type = float, default = 0.0,
-                        help = "dropout for neural network")  
+                        help = "dropout for neural network")
     parser.add_argument('--hidden_size', type = int, nargs = '+', default = [10, 16],
                         help = "hidden size for neural network layers")
     parser.add_argument('--num_layers', type = int, default = 1,
@@ -146,6 +149,8 @@ if __name__ == "__main__":
                         help = "to have a bidirectional lstm model")
     parser.add_argument('--use_variable_length', action = 'store_true',
                         help = "to take into account length of sequential input")
+    parser.add_argument('--channel_sizes',type = int, nargs = '+', default = [16,32,64],
+                        help = 'number of channels of the convolutional network\'s layers')
 
     args = parser.parse_args()
     main(args)
