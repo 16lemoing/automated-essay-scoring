@@ -103,12 +103,12 @@ cd ../bin
 # set is_bidirectional to false
 
 #python3 run_simulation.py --name embedding --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 300 --use_features --scale_features --hidden_size 300 128 --dropout 0.2 --device cuda 
-python3 run_simulation.py --name embedding --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 50 --use_features --scale_features --hidden_size 300 128 --dropout 0.2 --embedding_type glove --device cuda
+#python3 run_simulation.py --name embedding --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 50 --use_features --scale_features --hidden_size 300 128 --dropout 0.2 --embedding_type glove --device cuda
 #python3 run_simulation.py --name embedding --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 300 --use_features --scale_features --hidden_size 300 128 --dropout 0.2 --embedding_type random --device cuda
 
 #python3 run_simulation.py --name embedding --model_type lstm --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 300 --use_features --scale_features --hidden_size 100 16 --num_layers 4 --use_variable_length --device cuda 
-python3 run_simulation.py --name embedding --model_type lstm --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 50 --use_features --scale_features --hidden_size 100 16 --num_layers 4 --use_variable_length --embedding_type glove --device cuda
-#python3 run_simulation.py --name embedding --model_type lstm --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 300 --use_features --scale_features --hidden_size 100 16 --num_layers 4 --use_variable_length --embedding_type random --device cuda
+#python3 run_simulation.py --name embedding --model_type lstm --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 50 --use_features --scale_features --hidden_size 100 16 --num_layers 4 --use_variable_length --embedding_type glove --device cuda
+python3 run_simulation.py --name embedding --model_type lstm --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 300 --use_features --scale_features --hidden_size 100 16 --num_layers 4 --use_variable_length --embedding_type random --device cuda
 
 # set embedding_type to word2vec
 
@@ -131,7 +131,7 @@ python3 run_simulation.py --name embedding --model_type lstm --lr 0.01 --normali
 #python3 run_simulation.py --name sets --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 300 --use_features --scale_features --hidden_size 300 128 --dropout 0.2 --device cuda --remove_stopwords --set_idxs 7
 #python3 run_simulation.py --name sets --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 300 --use_features --scale_features --hidden_size 300 128 --dropout 0.2 --device cuda --remove_stopwords --set_idxs 8
 
-python3 run_simulation.py --name feat_only --model_type dense_feat --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 300 --use_features --scale_features --hidden_size 300 128 --dropout 0.2 --remove_stopwords
+#python3 run_simulation.py --name feat_only --model_type dense_feat --lr 0.01 --normalize_scores --batch_size 256 --correct_spelling --dim 300 --use_features --scale_features --hidden_size 300 128 --dropout 0.2 --remove_stopwords
 
 
 #--dim
