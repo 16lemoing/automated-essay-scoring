@@ -3,18 +3,23 @@ import numpy as np
 from sklearn.metrics import cohen_kappa_score
 import pandas as pd
 import matplotlib.pyplot as plt
+from models import save_model_weights
+from data import save_vocab
 
 class Logger():
     
-    def __init__(self, log_dir, name, args, save_best_weights = False):
+    def __init__(self, log_dir, checkpoint_dir, name, args, save_best_weights = False):
         
         # Build directories
         self.log_dir = log_dir
+        self.checkpoint_dir = checkpoint_dir
         self.plot_dir = self.log_dir / "plots"
         if not self.log_dir.exists():
             self.log_dir.mkdir()
         if not self.plot_dir.exists():
             self.plot_dir.mkdir()
+        if not self.checkpoint_dir.exists():
+            self.checkpoint_dir.mkdir()
         self.id = self.generate_id()
         self.id_plot_dir = self.plot_dir / self.id
         if not self.id_plot_dir.exists():
@@ -148,8 +153,17 @@ class Logger():
     
     def checkpoint_weights(self, model):
         if self.save_best_weights:
-            weights_file = self.id_plot_dir / f"fold{fold}_weights.pth"
-            torch.save(model.state_dict(), weights_file)
+            out_dir = self.checkpoint_dir / self.id
+            if not out_dir.exists():
+                out_dir.mkdir()
+            weights_file = out_dir / f"fold{self.fold}_weights.pth"
+            save_model_weights(model, weights_file)
+    
+    def checkpoint_vocab(self, vocab):
+        out_dir = self.checkpoint_dir / self.id
+        if not out_dir.exists():
+            out_dir.mkdir()
+        save_vocab(vocab, out_dir / 'vocab.pkl')
 
 def get_kappa(scores, pred_scores, sets):
     scores = np.array(scores)

@@ -47,7 +47,7 @@ def train_model(model, device, lr, epochs, train_dataloader, valid_dataloader = 
             valid_string = f", (valid) loss {valid_loss: .3f}, weighted kappa {valid_w_kappa: .3f}, global kappa {valid_g_kappa: .3f}, individual kappa {list(valid_i_kappa.values())}" if valid_dataloader is not None else ""
             print(f"Ep[{ep + 1}/{epochs}] (train) loss {sum_loss / total: .3f}{valid_string}")
 
-def evaluate_model(model, device, dataloader, criterion = nn.MSELoss):
+def evaluate_model(model, device, dataloader, criterion = nn.MSELoss()):
     model.eval()
     total = 0
     sum_loss = 0

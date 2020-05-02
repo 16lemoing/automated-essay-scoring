@@ -3,6 +3,7 @@
 import re
 import pandas as pd
 import numpy as np
+import pickle
 import nltk
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -38,6 +39,12 @@ def scan_essays(essay_contents, remove_stopwords):
     vocab = {word: i + 1 for i, word in enumerate(single_words)}
     vocab[""] = 0
     return vocab, max_essay_len
+
+def save_vocab(vocab, vocab_file):
+    pickle.dump(vocab, open(vocab_file, 'wb'))
+
+def load_vocab(vocab_file):
+    return pickle.load(open(vocab_file, 'rb'))
     
 def get_embedding_weights(vocab, embedding_dic, dim):
     """Get a matrix of embedding vectors from embedding dictionary (one for each word in vocab)"""
@@ -78,12 +85,19 @@ def get_encoded_data(essay_contents, essay_scores, vocab, max_essay_len, remove_
     """Encode each essay based on vocabulary and pad to desired length for batch processing"""
     encoded_essays = np.zeros((len(essay_contents), max_essay_len))
     essay_lengths = np.zeros(len(essay_contents))
+    not_found_count = 0
     for i, content in enumerate(essay_contents):
         words = tokenize_content(content, remove_stopwords)
-        enc = np.array([vocab[word] for word in words])
+        enc = np.zeros(len(words))
+        for j, word in enumerate(words):
+            try:
+                enc[j] = vocab[word]
+            except:
+                not_found_count += 1
         length = min(max_essay_len, len(enc))
         encoded_essays[i, :length] = enc[:length]
         essay_lengths[i] = length
+    print(f'{not_found_count} words missing from vocab while encoding essays')
     return encoded_essays, essay_lengths
 
 def get_set_scores(essay_scores, essay_sets):

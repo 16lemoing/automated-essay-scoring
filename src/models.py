@@ -4,6 +4,12 @@ import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pack_padded_sequence
 
+def save_model_weights(model, weights_file):
+    torch.save(model.state_dict(), weights_file)
+    
+def load_model_weights(model, weights_file):
+    model.load_state_dict(torch.load(weights_file))
+
 def create_embedding_layer(weights, non_trainable = False):
     num_embeddings, embedding_dim = weights.size()
     emb_layer = nn.Embedding(num_embeddings, embedding_dim)
