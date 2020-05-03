@@ -223,6 +223,15 @@ All the results for the experiments are saved as things progress in an excel spr
 \vspace*{-1.5cm}
 \end{center}
 
+\textbf{CNN model optimization}
+\TODO{commentaires pour CNN}
+\begin{center}
+\vspace*{-1.5cm}
+\includegraphics[width=0.85\textwidth]{fig/tune_cnn_arch.pdf}
+\vspace*{-1.5cm}
+\end{center}
+
+
 \textbf{Joint vs individual models} Multitask models are increasingly popular because achieving a good performance level for one task can help tackling other tasks. However, when we compare the results for our joint model compared to the results of individual models we achieve similar performance. Indeed, the quadratic weighted kappa for the joint model is $0.741$ and $0.744$ when compiling results together for individual models. The small difference is due to the joint model not being very good on the $8$\textsuperscript{th} essay set due to size imbalance between sets. Nevertheless, we prefer to keep the joint model as it is much faster to train and less likely to overfit.
 
 \begin{center}
@@ -246,8 +255,6 @@ All the results for the experiments are saved as things progress in an excel spr
 \includegraphics[width=0.85\textwidth]{fig/test.pdf}
 \vspace*{-1.5cm}
 \end{center}
-
-\TODO{courbes et commentaires pour CNN}
 
 \section{Conclusion}
 \TODO{}
