@@ -10,6 +10,7 @@
 \usepackage{wrapfig}
 \usepackage[table,xcdraw]{xcolor}
 
+\usepackage{cite}
 \usepackage[inline]{enumitem} % inline lists
 \usepackage{caption}
 \usepackage{subcaption}
@@ -59,16 +60,13 @@ Our project was implemented in Python. The code is available on a Github reposit
 Instructions are included in the repository to run the code on your machine.
 
 \subsection{The automated essay scoring task}
-\TODO{décrire succintement la tâche à accomplir : on donnera les détails dans la partie dataset}
+The task we are trying to solve here is called \emph{automated essay scoring} (AES). It consists in automatically assigning a grade to an essay written on a given topic. This is of particular interest in an educational setting, where incentives for developing unified and objective grading methods can be easily understood. Such a method could be used for instance to grade large scale exams where teachers need to evaluate hundreds of essays in a short amount of time, leading to exhaustion, unwanted bias introduced by how focused the teacher is when reading, and discrepancies in the grades caused by the teachers' own evaluation criteria. Using an automated grading system can then help to standardize this process. Other factors also account for the growing interest in this task, such as cost reduction.\par
+In spite of these incentives pushing for the development of automatic essay scoring algorithms, the attempts at using them received quite a backlash. The arguments against these algorithms were that they did not understand the meaning of the essays they were grading and were relying only on "surface features of responses". To prove their point, protestors created essays exploiting the biases discovered in the algorithm to create nonsensical high-graded essays. According to MIT Director of Writing Les Perelman, "the substance of an argument doesn’t matter [for such algorithms], as long as it looks to the computer as if it’s nicely argued"\cite{nyt2012}. Indeed, high grades were given to essays containing assertions that were simply not true, such as stating that the War of 1812 started in 1945.
+\paragraph{The Hewlett Foundation challenge} In 2012, \emph{The Hewlett Foundation}\footnote{The Hewlett Foundation is a private foundation that grants awards in a variety of liberal and progressive causes such as education, climate, health, journalism...} sponsored a competition on Kaggle\cite{kaggle} intended at demonstrating how AES algorithms - and more specifically neural networks - could be as reliable as humans in rating thousands of essays. Although this competition was very successful\cite{nguyen2018neural,song2013automated,turanga,chanakya}, it is still controversial whether the initial claim is backed up by the competition's results. In this project, we propose an algorithm for the Hewlett Foundation's challenge.
 
 \subsection{Related work}
-\TODO{citer 4,5 travaux qui ont été publiés là dessus}
-%par ex
-%https://cs224d.stanford.edu/reports/huyenn.pdf
-%https://pdfs.semanticscholar.org/21d8/22e9f0783d79ab19563d36c006f202b508e0.pdf
-%http://cs229.stanford.edu/proj2013/SongZhao-AutomatedEssayScoring.pdf
-%https://github.com/Turanga1/Automated-Essay-Scoring/blob/master/Automatic%20Student%20Essay%20Assessment.pdf
-%https://github.com/m-chanakya/AutoEssayGrading/blob/master/papers/paper1.pdf
+The interest for the AES task sparks around 1970 with the works of Ellis Batten Page\cite{page1966imminence}, but it quickly faces the limitations imposed by the computational power available at the time. This practical limitation is lifted in the 1990s, and 1999 sees the first commercial automatic essay grader\cite{attali2004automated}. After that, the field grows rapidly and different approaches are tested with the state-of-the-art statistical inference techniques known at the time\cite{rudner2002automated}.\par
+Today, the AES task is typically tackled using modern and state-of-the-art natural language processing (NLP) tools. Indeed, AES is a subtask of the more general text classification problem, which is a vibrant field in the NLP community. As such, classical NLP techniques can be used to achieve great results such as dense neural networks\cite{murray2012automatic}, convolutional networks\cite{kim2014convolutional}, or recurrent networks\cite{taghipour2016neural}.
 
 \section{A Neural Network based approach}
 
@@ -153,7 +151,14 @@ We introduce an LSTM model so that we can work directly with sequenced data.
 Our LSTM model is made of a custom number of layers and can include dropout.
 We also add a few fully connected layers so that we can make use of the extra-features if they are provided.
 \subsubsection{CNN}
-\TODO{description du CNN}
+Pursuing on our considerations on the strucutre of the text, we also propose a convolutional model. Convolutional architectures are very popular in image analysis tasks, because they can detect local patterns in the input data, and can adapt to different input sizes. Our architecture is inspired from the famous work of Kim et al.\cite{kim2014convolutional}. The embeddings are fed into three parallel 2D-convolution layers with kernels of different shapes. Our implementation chose kernels of size 3,4 and 5 along the time axis, and covering the whole embedding (see Figure~\ref{kim2014figure}). After that, we apply max pooling along the time axis for each channel, and feed the resulting nodes into a fully connected layer. This architecture has the advantage of being able to adapt to any essay length (thanks to the pooling), and should be able to detect syntactical richness thanks to the convolutional layers that shed light onto the local structure of the input.
+\begin{figure}
+	\centering
+	% \hspace{-1.5cm}
+	\includegraphics[width=\textwidth]{fig/kim2014fig.png}
+	\caption{The architecture of the convolutional network\cite{kim2014convolutional}}
+	\label{kim2014figure}
+\end{figure}
 
 \section{Experiments}
 We conduct a thorough analysis to compare and discuss all the proposed learning strategies.
