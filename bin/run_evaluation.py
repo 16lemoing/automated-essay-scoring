@@ -6,8 +6,13 @@ import argparse
 from pathlib import Path
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 
-def get_train_dataset(args):
+from data import get_data, scan_essays, get_embedding_weights, get_encoded_data, EssayDataset, load_vocab
+from models import Dense_NN
+from train import evaluate_model
+
+def get_train_dataset(args,train_file,vocab):
     data = get_data(train_file, args.normalize_scores, args.set_idxs,
                     args.features, args.use_features, args.correct_spelling)
     essay_contents, essay_scores, essay_sets, essay_features, set_scores = data
@@ -19,7 +24,7 @@ def get_train_dataset(args):
                                  set_scores, args.use_features, args.scale_features)
     return train_dataset
 
-def get_train_mean_features(args):
+def get_train_mean_features(args,train_file,vocab):
     data = get_data(train_file, args.normalize_scores, args.set_idxs,
                     args.features, args.use_features, args.correct_spelling)
     essay_contents, essay_scores, essay_sets, essay_features, set_scores = data
@@ -35,7 +40,7 @@ def get_train_mean_features(args):
     mean_score = mean(essay_scores)
     mean_features = list(np.array(essay_features).mean(axis=0))
     mean_set = args.set_idxs[np.argmax(np.bincount(essay_sets))]
-    return mean_length,mean_score,mean_features,mean_set
+    return mean_length,mean_score,mean_features,mean_set,set_scores
 
 
 def main(args):
@@ -46,20 +51,19 @@ def main(args):
     checkpoint_dir = Path("..") / "checkpoint" / args.checkpoint_name
     model_file = checkpoint_dir / args.model_name
     vocab_file = checkpoint_dir / args.vocab_name
-    if args.scaler_name is not None:
-        scaler_file = checkpoint_dir / args.scaler_name
-    else:
-        scaler_file = checkpoint_dir / 'scaler.pkl'
+    scaler_file = checkpoint_dir / args.scaler_name
 
     print('loading vocabulary')
     vocab = load_vocab(vocab_file)
 
     print('loading model')
-    model,embedding_weights = Dense_NN.load(model_file,scale_features=args.scale_features,return_embedding_weights=True)
+    device = torch.device(args.device)
+    model,embedding_weights = Dense_NN.load(model_file,normalize_score=args.normalize_scores,return_embedding_weights=True)
+    model = model.to(device)
 
-    print('getting data scaler')
-    if args.scaler_name is None:
-        train_dataset = get_train_dataset(args)
+    print('loading data scaler')
+    if not scaler_file.exists():
+        train_dataset = get_train_dataset(args,train_file,vocab)
         train_dataset.fit_scaler()
         train_dataset.save_scaler(scaler_file)
         scaler = train_dataset.get_scaler()
@@ -69,25 +73,21 @@ def main(args):
 
     print('creating dataset of words')
     words = list(vocab.keys())
-    encodings = list(vocabs.values())
+    encodings = list(vocab.values())
     N_words = len(encodings)
-    encodings_2d = list(map(lambda x:[x],encodings))
-    mean_length,mean_score,mean_features,mean_set = get_train_mean_features(args)
-    train_dataset = EssayDataset(train_encoded, train_lengths, essay_scores,
-                                 essay_features, essay_sets, args.normalize_scores,
-                                 set_scores, args.use_features, args.scale_features)
+    encodings_2d = np.array(list(map(lambda x:[x],encodings)))
+    mean_length,mean_score,mean_features,mean_set,set_score = get_train_mean_features(args,train_file,vocab)
     lengths = [mean_length]*N_words
-    scores = [mean_score]*N_words
+    scores = np.around([mean_score]*N_words)
     features = [mean_features]*N_words
-    sets = [mean_set]*N_word
+    sets = [mean_set]*N_words
     words_dataset = EssayDataset(encodings_2d,lengths,scores,features,
                                 sets,args.normalize_scores,
                                 set_score,args.use_features,args.scale_features)
-
+    dataloader = DataLoader(words_dataset,batch_size=args.batch_size, num_workers = 5, shuffle = False)
     print('evaluating importance of words')
-    device = torch.device(args.device)
-    output = evaluate_model(model,device,words_dataset)
-    print(type(output))
+    output = evaluate_model(model,device,dataloader)
+    print(output)
 
     # Fitting scaler
     # 1 Create Dataset
@@ -116,8 +116,6 @@ if __name__ == "__main__":
                         help = "name of the file where the vocabulary is saved")
     parser.add_argument('--scaler_name',default='scaler.pkl',
                         help = "name of the file where the scaler is saved")
-    parser.add_argument('--dim', type = int, default = 50,
-                        help = "dimension of embedding vectors")
     parser.add_argument('--remove_stopwords', action = 'store_true',
                         help = "to ignore commonly used words")
     parser.add_argument('--normalize_scores', action = 'store_true',
