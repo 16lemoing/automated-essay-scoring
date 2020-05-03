@@ -44,23 +44,28 @@ def get_mean_length_and_features_of_set(nset,args,train_file,vocab):
     essay_sets = np.array(essay_sets)
     essay_features = np.array(essay_features)
     essay_lengths = np.array(essay_lengths)
-
     in_set = np.argwhere(essay_sets == nset)
     set_features = essay_features[in_set]
     set_lengths = essay_lengths[in_set]
     return set_lengths.mean(), set_features.mean(axis=0).squeeze()
 
-def get_word_tuples_dataset(word_tuples,nset,length,features,set_scores,args):
+def get_simple_length_and_features(nset,args):
+    length = 0.
+    features = [0.]*(len(args.features)-1) + [float(nset)]
+    return length,features
+
+def get_word_tuples_dataset(word_tuples,nset,length,features,set_scores,args,scaler):
     N_words = len(word_tuples)
     n_words_in_tuple = len(word_tuples[0])
 
-    lengths = [length]*N_words
-    scores = [0]*N_words
-    features = [list(features)]*N_words
-    sets = [nset]*N_words
+    lengths = np.array([length]*N_words)
+    scores = np.array([0]*N_words)
+    features = np.array([features]*N_words)
+    sets = np.array([nset]*N_words)
     words_dataset = EssayDataset(word_tuples,lengths,scores,features,
                                 sets,args.normalize_scores,
                                 set_scores,args.use_features,args.scale_features)
+    words_dataset.set_scaler(scaler)
     return words_dataset
 
 
@@ -106,7 +111,9 @@ def main(args):
         word_tuples = list(map(lambda x:[x],encodings))
         set_scores = get_set_scores(args,train_file)
         length,features = get_mean_length_and_features_of_set(nset,args,train_file,vocab)
-        word_tuples_dataset = get_word_tuples_dataset(word_tuples, nset, length, features, set_scores,args)
+        # length,features = get_simple_length_and_features(nset,args)
+        print(features)
+        word_tuples_dataset = get_word_tuples_dataset(word_tuples, nset, length, features, set_scores,args,scaler)
         dataloader = DataLoader(word_tuples_dataset,batch_size=args.batch_size, num_workers = 5, shuffle = False)
 
         print('evaluating importance of words')
