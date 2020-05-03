@@ -34,13 +34,29 @@ def get_set_scores(args,train_file):
     _, _, _, _, set_scores = data
     return set_scores
 
-def get_word_tuples_dataset(word_tuples,nset,set_scores,args):
+def get_mean_length_and_features_of_set(nset,args,train_file,vocab):
+    data = get_data(train_file, args.normalize_scores, args.set_idxs,
+                    args.features, args.use_features, args.correct_spelling)
+    essay_contents, essay_scores, essay_sets, essay_features, set_scores = data
+    _, max_essay_len = scan_essays(essay_contents, args.remove_stopwords)
+    essay_encoded, essay_lengths = get_encoded_data(essay_contents, essay_scores,
+                                                    vocab, max_essay_len, args.remove_stopwords)
+    essay_sets = np.array(essay_sets)
+    essay_features = np.array(essay_features)
+    essay_lengths = np.array(essay_lengths)
+
+    in_set = np.argwhere(essay_sets == nset)
+    set_features = essay_features[in_set]
+    set_lengths = essay_lengths[in_set]
+    return set_lengths.mean(), set_features.mean(axis=0).squeeze()
+
+def get_word_tuples_dataset(word_tuples,nset,length,features,set_scores,args):
     N_words = len(word_tuples)
     n_words_in_tuple = len(word_tuples[0])
 
-    lengths = 100*[n_words_in_tuple]*N_words
+    lengths = [length]*N_words
     scores = [0]*N_words
-    features = [[0]*31]*N_words
+    features = [list(features)]*N_words
     sets = [nset]*N_words
     words_dataset = EssayDataset(word_tuples,lengths,scores,features,
                                 sets,args.normalize_scores,
@@ -89,7 +105,8 @@ def main(args):
         encodings = list(vocab.values())
         word_tuples = list(map(lambda x:[x],encodings))
         set_scores = get_set_scores(args,train_file)
-        word_tuples_dataset = get_word_tuples_dataset(word_tuples, nset, set_scores,args)
+        length,features = get_mean_length_and_features_of_set(nset,args,train_file,vocab)
+        word_tuples_dataset = get_word_tuples_dataset(word_tuples, nset, length, features, set_scores,args)
         dataloader = DataLoader(word_tuples_dataset,batch_size=args.batch_size, num_workers = 5, shuffle = False)
 
         print('evaluating importance of words')
