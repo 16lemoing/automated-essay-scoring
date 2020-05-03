@@ -6,7 +6,7 @@ from torch.nn.utils.rnn import pack_padded_sequence
 
 def save_model_weights(model, weights_file):
     torch.save(model.state_dict(), weights_file)
-    
+
 def load_model_weights(model, weights_file):
     model.load_state_dict(torch.load(weights_file))
 
@@ -66,6 +66,24 @@ class Dense_NN(nn.Module):
         x = self.dropout(x)
         x = self.activation_function(self.fc_3(x)).squeeze()
         return x
+
+    @staticmethod
+    def load(model_file, normalize_score,return_embedding_weights=True):
+        try:
+            state_dict = torch.load(model_file)
+        except RuntimeError:
+            state_dict = torch.load(model_file,map_location=torch.device('cpu'))
+        dim = state_dict['embedding.weight'].shape[1]
+        extra_dim = state_dict['fc_1.weight'].shape[1] - dim
+        use_features = extra_dim == 0
+        hidden_size = [state_dict['fc_2.weight'].shape[1],state_dict['fc_3.weight'].shape[1]]
+        model = Dense_NN(state_dict['embedding.weight'],dim, normalize_score, use_features, extra_dim, 0.2, hidden_size)
+        model.load_state_dict(state_dict)
+        if return_embedding_weights:
+            return model,state_dict['embedding.weight']
+        else:
+            return model
+
 
 class Dense_feat_NN(nn.Module):
     def __init__(self, normalize_score, extra_dim, dropout = 0.2, hidden_size = (300, 16)):

@@ -45,14 +45,14 @@ def save_vocab(vocab, vocab_file):
 
 def load_vocab(vocab_file):
     return pickle.load(open(vocab_file, 'rb'))
-    
+
 def get_embedding_weights(vocab, embedding_dic, dim):
     """Get a matrix of embedding vectors from embedding dictionary (one for each word in vocab)"""
     weights = np.zeros((len(vocab), dim))
     words_found = 0
     missing_words = []
     for word in vocab:
-        try: 
+        try:
             weights[vocab[word]] = embedding_dic[word]
             words_found += 1
         except KeyError:
@@ -80,7 +80,7 @@ def tokenize_content(essay_content, remove_stopwords, level="word"):
             if len(sentence) > 0:
                 sentences.append(tokenize_content(sentence, remove_stopwords))
         return sentences
-    
+
 def get_encoded_data(essay_contents, essay_scores, vocab, max_essay_len, remove_stopwords):
     """Encode each essay based on vocabulary and pad to desired length for batch processing"""
     encoded_essays = np.zeros((len(essay_contents), max_essay_len))
@@ -138,10 +138,10 @@ class EssayDataset(Dataset):
         self.use_features = use_features
         self.scale_features = scale_features
         self.scaler = None
-    
+
     def __len__(self):
         return len(self.encoded_essays)
-    
+
     def __getitem__(self, idx):
         x = torch.tensor(self.encoded_essays[idx]).long()
         lengths = torch.tensor(self.essay_lengths[idx]).long()
@@ -153,27 +153,40 @@ class EssayDataset(Dataset):
             feat = self.scaler.transform(feat).squeeze()
         feat = torch.tensor(feat).float()
         return x, lengths, scores, feat
-    
+
     def recover(self, scores, round_to_known = False):
         if self.normalize_score:
             recovered_scores = recover_scores(scores, self.essay_sets, self.set_scores, round_to_known)
         else:
             recovered_scores = scores
         return np.around(recovered_scores)
-    
+
     def get_scores(self):
         return self.essay_scores
-    
+
     def get_sets(self):
         return self.essay_sets
-    
+
     def fit_scaler(self):
         if self.use_features and self.scale_features:
             self.scaler = StandardScaler()
             self.scaler.fit(self.essay_features)
-    
+
     def get_scaler(self):
         return self.scaler
-    
+
     def set_scaler(self, scaler):
         self.scaler = scaler
+
+    def save_scaler(self,save_file):
+        with open(save_file,'wb') as f:
+            pkl.dump(self.essay_features,f)
+
+    @staticmethod
+    def load_scaler(load_file):
+        essay_features = None
+        with open(load_file,'rb') as f:
+            essay_features = pkl.load(f)
+        scaler = StandardScaler()
+        scaler.fit(essay_features)
+        return scaler
