@@ -60,6 +60,7 @@ class Dense_NN(nn.Module):
         x = torch.mean(x, dim = 1)
         if self.use_features:
             x = torch.cat((x, feat), dim = 1)
+            
         x = torch.relu(self.fc_1(x))
         x = self.dropout(x)
         x = torch.relu(self.fc_2(x))
@@ -75,7 +76,7 @@ class Dense_NN(nn.Module):
             state_dict = torch.load(model_file,map_location=torch.device('cpu'))
         dim = state_dict['embedding.weight'].shape[1]
         extra_dim = state_dict['fc_1.weight'].shape[1] - dim
-        use_features = extra_dim == 0
+        use_features = extra_dim > 0
         hidden_size = [state_dict['fc_2.weight'].shape[1],state_dict['fc_3.weight'].shape[1]]
         model = Dense_NN(state_dict['embedding.weight'],dim, normalize_score, use_features, extra_dim, 0.2, hidden_size)
         model.load_state_dict(state_dict)
