@@ -81,7 +81,7 @@ cd bin
 python3 run_test.py --name 'test' --train_file 'train_x.tsv' --test_file 'test_x.tsv' --dim 300 --remove_stopwords --normalize_scores --correct_spelling --use_features --scale_features --device 'cuda' --batch_size 256 --dropout 0.2 --hidden_size 300 128 --save_best_weights
 cd ..
 ```
-where `--save_best_weights` allows to save the best model weights as well as the vocab dictionary (which generates the encoding for each words in the essays) in the `checkpoint/` folder.
+where `--save_best_weights` flag allows to save the best model weights as well as the vocab dictionary (which generates the encoding for each word in the essays) in the `checkpoint/` folder.
 
 ## References
 
