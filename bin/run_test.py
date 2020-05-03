@@ -102,7 +102,8 @@ def main(args):
     
     if args.save_best_weights:
         logger.checkpoint_vocab(vocab)
-        print(f"best_weights and vocab were saved to {checkpoint_dir} (id: {logger.id})")
+        train_dataset.save_scaler(logger.get_checkpoint_folder() / 'scaler.pkl')
+        print(f"best_weights, scaler and vocab were saved to {checkpoint_dir} (id: {logger.id})")
     
     print("testing")
     

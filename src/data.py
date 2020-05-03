@@ -178,15 +178,15 @@ class EssayDataset(Dataset):
     def set_scaler(self, scaler):
         self.scaler = scaler
 
-    def save_scaler(self,save_file):
-        with open(save_file,'wb') as f:
-            pkl.dump(self.essay_features,f)
+    def save_scaler(self, save_file):
+        with open(save_file, 'wb') as f:
+            pickle.dump(self.essay_features, f)
 
     @staticmethod
     def load_scaler(load_file):
         essay_features = None
-        with open(load_file,'rb') as f:
-            essay_features = pkl.load(f)
+        with open(load_file, 'rb') as f:
+            essay_features = pickle.load(f)
         scaler = StandardScaler()
         scaler.fit(essay_features)
         return scaler

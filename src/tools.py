@@ -159,6 +159,9 @@ class Logger():
             weights_file = out_dir / f"fold{self.fold}_weights.pth"
             save_model_weights(model, weights_file)
     
+    def get_checkpoint_folder(self):
+        return self.checkpoint_dir / self.id
+    
     def checkpoint_vocab(self, vocab):
         out_dir = self.checkpoint_dir / self.id
         if not out_dir.exists():
