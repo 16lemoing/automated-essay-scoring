@@ -74,11 +74,15 @@ def main(args):
     plt.grid(True)
     plt.savefig(str(processed_dir/'words_important_only_for_k.pdf'), format='pdf')
 
-
-
+    source_based = [2,3,4,5,6]
+    common_to_source_based = words.loc[:,source_based].sum(axis=1)
+    common_to_source_based = words.loc[common_to_source_based == 4]
+    statistics[f'Words important to sets {source_based} combined'] = len(common_to_source_based.values)
+    save_csv(common_to_source_based.index.values, 'common_to_source_based.csv')
 
     with open(str(processed_dir/'statistics.json'), 'w') as f:
         json.dump(statistics, f, separators=(',\n',':'))
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--checkpoint_name', default='000001',
