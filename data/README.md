@@ -5,6 +5,8 @@ This information is a summary of the one available on the [competition's Kaggle 
 
 # Essay set #1
 ## Description
+|Field|Value|
+|-|-|
 |Type of essay:			   |Persuasive / Narrative / Expository|
 |Grade level:	   		   |8								   |
 |Training set size:		   |1,785 essays					   |
@@ -21,6 +23,8 @@ __Write a letter to your local newspaper in which you state your opinion on the 
 
 # Essay set 2
 ## Description
+|Field|Value|
+|-|-|
 |Type of essay:			   		|Persuasive/ Narrative/Expository			 |
 |Grade level:			   		|10											 |
 |Training set size:		   		|1,800 essays								 |
@@ -47,6 +51,8 @@ __Write a persuasive essay to a newspaper reflecting your vies on censorship in 
 
 # Essay set 3
 ## Description
+|Field|Value|
+|-|-|
 |Type of essay:			   |Source Dependent Responses			   |
 |Grade level:			   |10									   |
 |Training set size:		   |1,726 essays						   |
@@ -64,6 +70,8 @@ __Write a response that explains how the features of the setting affect the cycl
 
 # Essay set 4
 ## Description
+|Field|Value|
+|-|-|
 |Type of essay:			   |Source Dependent Responses				 |
 |Grade level: 			   |10										 |
 |Training set size:		   |1,772 essays							 |
@@ -85,6 +93,8 @@ __Write a response that explains why the author concludes the story with this pa
 
 # Essay set 5
 ## Description
+|Field|Value|
+|-|-|
 |Type of essay:			   |Source Dependent Responses  |
 |Grade level:			   |8					  		|
 |Training set size:		   |1,805 essays		  		|
@@ -102,6 +112,8 @@ __Describe the mood created by the author in the memoir. Support your answer wit
 
 # Essay set 6
 ## Description
+|Field|Value|
+|-|-|
 |Type of essay:				|Source Dependent Responses |
 |Grade level:				|10							|
 |Training set size:			|1,800 essays				|
@@ -119,6 +131,8 @@ __Based on the excerpt, describe the obstacles the builders of the Empire State 
 
 # Essay set 7
 ## Description
+|Field|Value|
+|-|-|
 |Type of essay:				|Persuasive/ Narrative/Expository	|
 |Grade level:				|7									|
 |Training set size:			|1,730 essays						|
@@ -134,7 +148,8 @@ __Do only one of the following: write a story about a time when you were patient
 
 # Essay set 8
 ## Description
-
+|Field|Value|
+|-|-|
 |Type of essay:				|Persuasive/ Narrative/Expository				  |
 |Grade level:				|10												  |
 |Training set size:			|918 essays										  |
