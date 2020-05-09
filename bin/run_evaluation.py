@@ -121,16 +121,16 @@ def main(args):
         outputs[idx_of_set,:] = predict_score(model,device,dataloader,True)
 
     words_orders = np.argsort(outputs)
-    # print('plotting results')
-    # plt.figure()
-    # for idx_of_set in range(N_sets):
-    #     nset = args.set_idxs[idx_of_set]
-    #     plt.plot(outputs[idx_of_set,words_orders[idx_of_set,:]][::-1],label=f'Set {nset}')
-    # plt.legend()
-    # plt.grid(True)
-    # plt.xlabel('Importance-ordered word index')
-    # plt.ylabel('Normalized score of one-word essay')
-    # plt.savefig(str(output_dir/'words_importance.pdf'),format='pdf')
+    print('plotting results')
+    plt.figure()
+    for idx_of_set in range(N_sets):
+        nset = args.set_idxs[idx_of_set]
+        plt.plot(outputs[idx_of_set,words_orders[idx_of_set,:]][::-1],label=f'Set {nset}')
+    plt.legend()
+    plt.grid(True)
+    plt.xlabel('Importance-ordered word index')
+    plt.ylabel('Normalized score of one-word essay')
+    plt.savefig(str(output_dir/'words_importance.pdf'),format='pdf')
 
     print('saving most important words for each essay')
     words = np.array(list(vocab.keys()))
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_file', default = "train_x.tsv",
                         help = "name of .tsv file under which is saved train data")
-    parser.add_argument('--checkpoint_name',default='checkpoint',
+    parser.add_argument('--checkpoint_name',default='000001',
                         help = "name of the checkpoint directory")
     parser.add_argument('--model_name',default='fold0_weights.pth',
                         help = "name of the file where the weights are saved")
