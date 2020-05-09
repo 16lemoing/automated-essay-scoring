@@ -139,6 +139,7 @@ We also extract part of speech indicators from the essays (number of nouns, adje
 \subsection{Models architecture}
 We propose highly customizable neural networks to optimize there architecture based on the validation results.
 \subsubsection{Dense}
+\label{pos:densearchi}
 First, we propose a four-layer dense neural network.
 The first layer is the embedding layer.
 We then take the mean of all the embedding vectors and feed it to a series of dense layers.
@@ -224,7 +225,7 @@ We save the average validation metrics across all folds corresponding to the bes
 When all configurations have been cross-validated we test the best configuration on the test data (which remained unseen up to this point).
 
 \subsection{Results}
-All the results for the experiments are saved as things progress in an excel spreadsheet. The raw file containing all these results can be found at \verb+data/raw_results.xlsx+ in the Github repository coming alongside with this report.
+All the results for the experiments are saved as things progress in an excel spreadsheet. The raw file containing all these results can be found at \verb+doc/raw_results.xlsx+ in the Github repository coming alongside with this report.
 
 \subsubsection{Model selection}
 In this first part, we describe the process we followed to find our best-performing model.
@@ -284,11 +285,14 @@ We tested only one architecture for the CNN and did not try vary the weights or 
 
 \paragraph{Joint vs individual models} Multitask models are increasingly popular because achieving a good performance level for one task can help tackling other tasks. However, when we compare the results for our joint model compared to the results of individual models we achieve similar performance. Indeed, the quadratic weighted kappa for the joint model is $0.741$ and $0.744$ when compiling results together for individual models. The small difference is due to the joint model not being very good on the $8$\textsuperscript{th} essay set due to size imbalance between sets. Nevertheless, we prefer to keep the joint model as it is much faster to train and less likely to overfit.
 
-\begin{center}
-\vspace*{-1.5cm}
+\begin{figure}
+\centering
+% \vspace*{-1.5cm}
 \includegraphics[width=0.85\textwidth]{fig/joint_vs_indiv.pdf}
-\vspace*{-1.5cm}
-\end{center}
+% \vspace*{-1.5cm}
+\caption{Individual performances for each set on the validation and test sets.}
+\label{fig:individualperf}
+\end{figure}
 
 \paragraph{Word embeddings comparison} We compare all the proposed word embedding strategies. It turns out that the most successful word embedding strategy is the Word2Vec embedding trained on the essay sentences. We think this is due to specific words and contexts being good indicators for the value of an essay. This strategy leverages the whole corpus thus having task specific knowledge for each of the essay tasks.
 
@@ -309,12 +313,69 @@ The previous section shows that our best performing model has the dense architec
 \vspace*{-1.5cm}
 \end{center}
 
+\paragraph{Words sensitivity analysis} We propose here a simple idea to analyse the sensitivity of our model to particular keywords. We recall from Section~\ref{pos:densearchi} that the dense model starts by averaging all of the embeddings of the essay, and thakes this mean embedding as the input of the dense layers. Hence, it is very easy to feed only one word to the model. Heuristically, this corresponds to automatically grading the essay composed of this sole word. By doing that for all words in the vocabulary, we can map a grade to each word, and analyze this grade as the importance given by the algorithm to this word.
+\subparagraph{Caveat - a word on extra features} This simple reasoning is only valid if the only input to the model is the essay's mean embedding. As a matter of fact, our model also requires the extra features described in Section~\ref{pos:extrafeats}. To make the model operate near its training zone and have meaningful results, we do the following : for each set, set each extra feature to its mean value across the set, and feed the embedding of the word as the input. The output of this algorithm is, for each word, a set of grades. However, it is now \emph{wrong} to interpret these grades as "the grade given by the algorithm for essay set number $k$ to the essay consisting of the sole keyword". We will keep that in mind, but neglect it in the analysis.
+\subparagraph{Grades of one-word essays} The results of this algorithm are shown in Figure~\ref{fig:onewordessays}. Very interestingly, one can see that it is possible to totally fool the algorithm with essays composed of only one particularly well-chosen word. While being unsurprising, this result shows that the algorithm is not very robust and is very susceptible to adversarial attacks, and hence not suited to be used in real-world applications.\newline
+We can further investigate this figure by noting that the shape of the importance profile of Figure~\ref{fig:importance} does not seem to be correlated with performance. Indeed, Sets 1 and 2 have very similar curves, yet the model performs very differently on these two tasks (see Figure~\ref{fig:individualperf}. \newline
+Interestingly, it appears that the model is able to identify more more words that matter only for these topics for Sets 1, 2 and 8 : excluding set 7, these are the sets corresponding to argumentative tasks (Table~\ref{setsdescription}). Once again, this is not correlated with performance, as it can be seen on Figure~\ref{fig:individualperf}.
+
+\begin{figure}
+	\begin{subfigure}{\textwidth}
+		\centering
+		\includegraphics[width=0.8\linewidth]{fig/words_importance.pdf}
+		\caption{Sorted words importance.}
+		\label{fig:importance}
+	\end{subfigure}
+	\newline
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=0.8\linewidth]{fig/words_important_in_k_sets.pdf}
+		\caption{Words with importance of $1.0$ in exactly $k$ sets.}
+		\label{fig:exactlyk}
+	\end{subfigure}
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=0.8\linewidth]{fig/words_important_only_for_k.pdf}
+		\caption{Words with importance of $1.0$ for set $k$ only.}
+		\label{fig:onlyk}
+	\end{subfigure}
+	\caption{Results of the importance algorithm. Figure~\ref{fig:importance} is plotted after sorting the importances independently for each set. Hence, the word corresponding to an index depends on the set. Figures~\ref{fig:exactlyk} and \ref{fig:onlyk} give information on the correlation between the important words across sets.}
+	\label{fig:onewordessays}
+\end{figure}
+
+\subparagraph{Comparing topics and important words} You will find in Annex~\ref{pos:importantwords} an overview of the important words for sets 1,2 and 8. Surprisingly, most of the words are not specific to the topic upon wich the essay is about, although there are some that match. What's more, some words marked as important have spelling mistakes\footnote{Although this could be accounted for by our spelling error correction algorithm}, such as "teconogly" instead of "technology" for Set 1, "netflicks" instead of "netflix", or even abbreviations or slang talk such as "bf" instead of "boyfriend", or "ganna" that probably stands for "going to". This is probably accounted for by the fact that the dataset is relatively small for deep learning tasks, and more training examples would probably reduce this phenomenon.
+
+
 \section{Conclusion}
-\TODO{}
+We have started this report by stating how much of a game changer could be a reliable automated scoring system. This project has shown us how difficult designing such a system can be, even with the wonderful toolbox offered by modern natural language processing techniques. By testing several algorithms, we ranked 23rd\footnote{By extrapolating the results obtained on our own test set to the competition's true one, to which we don't have access.} on the competition's leaderboard, yet our algorithm could be easily tricked into giving a high grade to nonsensical essays. It is clear that the basic architecture of the model as well as the small size of the dataset are at fault here, since we cannot reasonably hope for our model to learn grammar. However, gathering more data for such a task is very costly. Indeed, contrary to translation tasks where huge databases can be constituted using existing texts, tests on a particular topic are generally taken only by a handful of students (it is not common for more than a few thousand students to work on the same test), and the resulting essays are generally handwritten and not adapted to being processed by computers. Finally, it requires a lot of human work to rate an essay, much more than to label an image for instance. Hence, even with a better architecture and more computer power, the constitution of the dataset will still be a problem.\par
+In spite of all that, this project has helped us shed light on some of the criticisms that were made to automated scoring systems in the past years. It is true that learning-based algorithms primarily focus on structural and formal features that do not necessarily reflect the meaning of the sentence. In our case, this was very obvious, but more sophisticated algorithms are not immuned to this. However, this does not mean that learning algorithms will never be useful for grading. One can imagine a combination of human rating and automated rating to detect rating errors, or use learning-based algorithms for what they are really good at : detecting structures in data, by checking for instance the grammatical correctness of an essay, or other task that largely rely on these surface features that neural networks can detect.
+
+\appendix
+\newpage
+\section{Important words}
+\label{pos:importantwords}
+The results presented here can be found in the folder \verb+outputs/000001/processed/+ of the GitHub page of our project.
+\subsection{For set 1}
+\paragraph{Topic} Write a letter to your local newspaper in which you state your opinion on the effects computers have on people.
+\paragraph{Words}
+adulterated, appointed, attainable, beards, doesnt, extravagant, 
+freer, gunk, haren, jim, loathe, marble, mooned, nerd, 
+portals, proceeds, shimmered, teconogly, treadmills, twinkle, unpronounceable, unsocial, venting
+
+\subsection{For set 2}
+\paragraph{Topic} Write a persuasive essay to a newspaper reflecting your vies on censorship in libraries.
+
+\paragraph{Words}
+anythingelse, athe, carie, ceilings, deflating, durning, eto, frombeing, hardworked, hordes, impressive, moutain, mover, muster, netflicks, overworked, prevails, redon, restated, snooty, solider, sprawled, squires, strats, thistle, tracked, trown, vaccine, watchin, weakly
+
+\subsection{For set 8}
+\paragraph{Topic} Tell a true story in which laughter was one element or part.
+\paragraph{Words}
+appicatrone, aprons, arjuna, ash, bad, bf, building, bup, calorie, cashews, cheeses, comit, contradiction, crazy, dace, detected, exaggerate, extravaganza, figer, funny, ganna, get, girls, go, guy, guys, heartfilling, history, hogweed, hopper,  interviewing, italy, jeopardize, kids, knew, know, let, looked, looking, mauerie, men, might, mom, monstrous, never, older, omg, oppernutity, patient, pediatrician, peeling, pick, pingpong, programe, really, rebuilt, room, satisfies, shaked, shead, shrouded, slur, sometimes, stables, started, store, stray, stuff, suspenseful, tarts, turned, unicycles, unlocks, want, watched, waver, wo
+
 
 \bibliography{ref} 
 \bibliographystyle{ieeetr}
 \addcontentsline{toc}{section}{References}
 
 \end{document}
-
