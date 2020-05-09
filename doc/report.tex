@@ -271,7 +271,7 @@ All the results for the experiments are saved as things progress in an excel spr
 \end{center}
 
 \textbf{CNN model optimization}
-\TODO{commentaires pour CNN}
+We tested only one architecture for the CNN and did not try vary the weights or the number of layers. The main parameter we tuned was dropout. Indeed, a 0 dropout seemed to result in quick overfitting, and increasing dropout helped reduce it. The optimal value for dropout for our model is $0.2$, but even with this, this model is the least performing: on the validation set, the weighted kappa tops at 0.62, whereas dense models can achieve 0.74. More particularly, the CNN is outperformed in all the essay sets by other architectures, as it can be seen in the file \verb|data/raw_results.xlsx| on our GitHub repository. The way we interpret this result is that local structure is not predominant in the grading of the essays, and a larger essay-wise view is very beneficial.
 \begin{center}
 \vspace*{-1.5cm}
 \includegraphics[width=0.85\textwidth]{fig/tune_cnn_arch.pdf}
