@@ -224,9 +224,12 @@ We save the average validation metrics across all folds corresponding to the bes
 When all configurations have been cross-validated we test the best configuration on the test data (which remained unseen up to this point).
 
 \subsection{Results}
-All the results for the experiments are saved as things progress in an excel spreadsheet. The raw file containing all these results can be found in the Github repository alongside this report.
+All the results for the experiments are saved as things progress in an excel spreadsheet. The raw file containing all these results can be found at \verb+data/raw_results.xlsx+ in the Github repository coming alongside with this report.
 
-\textbf{Pipeline optimization} First we show incremental results of pipeline features optimization compared to a baseline method. The baseline method corresponds to the set of default arguments (Word2Vec embedding of dim 50, shallow fully-connected model without dropout, no extra features, no special data preprocessing, learning from all essay sets at once). We found that the baseline method was rather unstable (sometimes giving decent results, sometimes not converging at all). Normalizing score so that they fit in $[0, 1]$ enabled a great improvement of the quadratic weighted kappa metric compared to the baseline method. Spelling correction led to maginally better scores. Extra-features insertion led to more instabilities but adding this together with feature scaling solved this issue and further improved the results. Changing the embedding dimension from 50 to 300 and removing stopwords helped improving the validation metrics even more.
+\subsubsection{Model selection}
+In this first part, we describe the process we followed to find our best-performing model.
+
+\paragraph{Pipeline optimization} First we show incremental results of pipeline features optimization compared to a baseline method. The baseline method corresponds to the set of default arguments (Word2Vec embedding of dim 50, shallow fully-connected model without dropout, no extra features, no special data preprocessing, learning from all essay sets at once). We found that the baseline method was rather unstable (sometimes giving decent results, sometimes not converging at all). Normalizing score so that they fit in $[0, 1]$ enabled a great improvement of the quadratic weighted kappa metric compared to the baseline method. Spelling correction led to maginally better scores. Extra-features insertion led to more instabilities but adding this together with feature scaling solved this issue and further improved the results. Changing the embedding dimension from 50 to 300 and removing stopwords helped improving the validation metrics even more.
 
 \begin{center}
 \vspace*{-1.5cm}
@@ -234,7 +237,7 @@ All the results for the experiments are saved as things progress in an excel spr
 \vspace*{-1.5cm}
 \end{center}
 
-\textbf{Hyperparameters tuning} Then we focused on tuning the key learning hyperparameters. For the choice of the learning rate, two values ($0.001$ and $0.01$) led to similar results. We selected $0.01$ because it was slightly better. For the batch size, results indicated that we should select either a small batch size or a very large one. As it speeds up the learning process we decided to go with a rather large batch size ($256$).
+\paragraph{Hyperparameters tuning} Then we focused on tuning the key learning hyperparameters. For the choice of the learning rate, two values ($0.001$ and $0.01$) led to similar results. We selected $0.01$ because it was slightly better. For the batch size, results indicated that we should select either a small batch size or a very large one. As it speeds up the learning process we decided to go with a rather large batch size ($256$).
 
 \begin{center}
 \vspace*{-1.5cm}
@@ -248,7 +251,7 @@ All the results for the experiments are saved as things progress in an excel spr
 \vspace*{-1.5cm}
 \end{center}
 
-\textbf{Dense model optimization} We tried various architecture for the fully connected model. We show the results for different dropout values and number of parameters. The results shown correspond to learning from embedded essays as well as extra-features. We also tried learning solely from extra-features a reached a quadratic weighted kappa value of $0.678$ which is far from the best results we can get when combining embedded essays and extra-features. The best configuration for the dense model is obtained with hidden layers of size $300$ and $128$ and dropout of $0.2$.
+\paragraph{Dense model optimization} We tried various architecture for the fully connected model. We show the results for different dropout values and number of parameters. The results shown correspond to learning from embedded essays as well as extra-features. We also tried learning solely from extra-features a reached a quadratic weighted kappa value of $0.678$ which is far from the best results we can get when combining embedded essays and extra-features. The best configuration for the dense model is obtained with hidden layers of size $300$ and $128$ and dropout of $0.2$.
 
 \begin{center}
 \vspace*{-1.5cm}
@@ -256,7 +259,7 @@ All the results for the experiments are saved as things progress in an excel spr
 \vspace*{-1.5cm}
 \end{center}
 
-\textbf{LSTM model optimization} We conducted similar experiments for our LSTM model. The best LSTM model was obtained with hidden layer size of $100$ for the recurrent units and $16$ for the fully connected part and droupout value of $0.2$. We then tried deeper model architectures by stacking recurrent units on top of each other. Results show that a depth of $4$ is optimal in our case.
+\paragraph{LSTM model optimization} We conducted similar experiments for our LSTM model. The best LSTM model was obtained with hidden layer size of $100$ for the recurrent units and $16$ for the fully connected part and droupout value of $0.2$. We then tried deeper model architectures by stacking recurrent units on top of each other. Results show that a depth of $4$ is optimal in our case.
 
 \begin{center}
 \vspace*{-1.5cm}
@@ -270,8 +273,8 @@ All the results for the experiments are saved as things progress in an excel spr
 \vspace*{-1.5cm}
 \end{center}
 
-\textbf{CNN model optimization}
-We tested only one architecture for the CNN and did not try vary the weights or the number of layers. The main parameter we tuned was dropout. Indeed, a 0 dropout seemed to result in quick overfitting, and increasing dropout helped reduce it. The optimal value for dropout for our model is $0.2$, but even with this, this model is the least performing: on the validation set, the weighted kappa tops at 0.62, whereas dense models can achieve 0.74. More particularly, the CNN is outperformed in all the essay sets by other architectures, as it can be seen in the file \verb|data/raw_results.xlsx| on our GitHub repository. The way we interpret this result is that local structure is not predominant in the grading of the essays, and a larger essay-wise view is very beneficial.
+\paragraph{CNN model optimization}
+We tested only one architecture for the CNN and did not try vary the weights or the number of layers. The main parameter we tuned was dropout. Indeed, a 0 dropout seemed to result in quick overfitting, and increasing dropout helped reduce it. The optimal value for dropout for our model is $0.2$, but even with this, this model is the least performing: on the validation set, the weighted kappa tops at 0.62, whereas dense models can achieve 0.74. More particularly, the CNN is outperformed in all the essay sets by other architectures. The way we interpret this result is that local structure is not predominant in the grading of the essays, and a larger essay-wise view is very beneficial.
 \begin{center}
 \vspace*{-1.5cm}
 \includegraphics[width=0.85\textwidth]{fig/tune_cnn_arch.pdf}
@@ -279,7 +282,7 @@ We tested only one architecture for the CNN and did not try vary the weights or 
 \end{center}
 
 
-\textbf{Joint vs individual models} Multitask models are increasingly popular because achieving a good performance level for one task can help tackling other tasks. However, when we compare the results for our joint model compared to the results of individual models we achieve similar performance. Indeed, the quadratic weighted kappa for the joint model is $0.741$ and $0.744$ when compiling results together for individual models. The small difference is due to the joint model not being very good on the $8$\textsuperscript{th} essay set due to size imbalance between sets. Nevertheless, we prefer to keep the joint model as it is much faster to train and less likely to overfit.
+\paragraph{Joint vs individual models} Multitask models are increasingly popular because achieving a good performance level for one task can help tackling other tasks. However, when we compare the results for our joint model compared to the results of individual models we achieve similar performance. Indeed, the quadratic weighted kappa for the joint model is $0.741$ and $0.744$ when compiling results together for individual models. The small difference is due to the joint model not being very good on the $8$\textsuperscript{th} essay set due to size imbalance between sets. Nevertheless, we prefer to keep the joint model as it is much faster to train and less likely to overfit.
 
 \begin{center}
 \vspace*{-1.5cm}
@@ -287,7 +290,7 @@ We tested only one architecture for the CNN and did not try vary the weights or 
 \vspace*{-1.5cm}
 \end{center}
 
-\textbf{Word embeddings comparison} We compare all the proposed word embedding strategies. It turns out that the most successful word embedding strategy is the Word2Vec embedding trained on the essay sentences. We think this is due to specific words and contexts being good indicators for the value of an essay. This strategy leverages the whole corpus thus having task specific knowledge for each of the essay tasks.
+\paragraph{Word embeddings comparison} We compare all the proposed word embedding strategies. It turns out that the most successful word embedding strategy is the Word2Vec embedding trained on the essay sentences. We think this is due to specific words and contexts being good indicators for the value of an essay. This strategy leverages the whole corpus thus having task specific knowledge for each of the essay tasks.
 
 \begin{center}
 \vspace*{-1.5cm}
@@ -295,7 +298,10 @@ We tested only one architecture for the CNN and did not try vary the weights or 
 \vspace*{-1.5cm}
 \end{center}
 
-\textbf{Test results} We show the performance of the best model on the test set compared to the performance on the validation set. The individual quadratic weighted kappa are equivalent for all sets except the last one. The reason for this is that the score range is the largest for the 8\textsuperscript{th} set and the kappa metric is expecting identical scores to count true positives. So even if the scores are close the kappa can be low. Moreover the 8\textsuperscript{th} set contains less training samples so it is harder to generalize to unseen essays for this set. All in all, the overall performance is quite satisfying and comparable to other works dedicated to this Kaggle competition.
+\subsubsection{Best model performance analysis}
+The previous section shows that our best performing model has the dense architecture, a word2vec embedding and some dropout. Now, we evaluate the performance of this model on the test data - which has not been used until this point -, compare it with the competition's results, and provide a brief heuristical analysis about the keywords detected by our model.
+
+\paragraph{Test results} We show the performance of the best model on the test set compared to the performance on the validation set. The individual quadratic weighted kappa are equivalent for all sets except the last one. The reason for this is that the score range is the largest for the 8\textsuperscript{th} set and the kappa metric is expecting identical scores to count true positives. So even if the scores are close the kappa can be low. Moreover the 8\textsuperscript{th} set contains less training samples so it is harder to generalize to unseen essays for this set. All in all, the overall performance is quite satisfying and comparable to other works dedicated to this Kaggle competition.
 
 \begin{center}
 \vspace*{-1.5cm}
