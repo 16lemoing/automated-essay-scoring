@@ -4,6 +4,7 @@ import sys
 sys.path.append('../src/')
 import argparse
 from pathlib import Path
+import csv
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -112,7 +113,7 @@ def main(args):
         set_scores = get_set_scores(args,train_file)
         length,features = get_mean_length_and_features_of_set(nset,args,train_file,vocab)
         # length,features = get_simple_length_and_features(nset,args)
-        print(features)
+
         word_tuples_dataset = get_word_tuples_dataset(word_tuples, nset, length, features, set_scores,args,scaler)
         dataloader = DataLoader(word_tuples_dataset,batch_size=args.batch_size, num_workers = 5, shuffle = False)
 
@@ -120,16 +121,29 @@ def main(args):
         outputs[idx_of_set,:] = predict_score(model,device,dataloader,True)
 
     words_orders = np.argsort(outputs)
-    print('plotting results')
-    plt.figure()
+    # print('plotting results')
+    # plt.figure()
+    # for idx_of_set in range(N_sets):
+    #     nset = args.set_idxs[idx_of_set]
+    #     plt.plot(outputs[idx_of_set,words_orders[idx_of_set,:]][::-1],label=f'Set {nset}')
+    # plt.legend()
+    # plt.grid(True)
+    # plt.xlabel('Importance-ordered word index')
+    # plt.ylabel('Normalized score of one-word essay')
+    # plt.savefig(str(output_dir/'words_importance.pdf'),format='pdf')
+
+    print('saving most important words for each essay')
+    words = np.array(list(vocab.keys()))
+    save_file = 'important_words_set_{}.csv'
     for idx_of_set in range(N_sets):
-        nset = args.set_idxs[idx_of_set]
-        plt.plot(outputs[idx_of_set,words_orders[idx_of_set,:]][::-1],label=f'Set {nset}')
-    plt.legend()
-    plt.grid(True)
-    plt.xlabel('Words')
-    plt.ylabel('Normalized score of one-word essay')
-    plt.savefig(str(output_dir/'words_importance.pdf'),format='pdf')
+      order = words_orders[idx_of_set, :]
+      ordered = words[order]
+      importances = outputs[idx_of_set, order][::-1]
+      max_index = np.max(np.nonzero(importances == 1))
+      save_path = output_dir / save_file.format(idx_of_set+1)
+      with open(str(save_path), 'w') as f:
+        csv.writer(f).writerows(ordered[:max_index].reshape((-1,1)).tolist())
+      print(f'---- Saved {max_index} words for set {idx_of_set} at {str(save_path)}')
 
 
 if __name__ == "__main__":
