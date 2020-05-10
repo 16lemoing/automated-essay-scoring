@@ -83,6 +83,25 @@ cd ..
 ```
 where `--save_best_weights` flag allows to save the best model weights as well as the vocab dictionary (which generates the encoding for each word in the essays) in the `checkpoint/` folder.
 
+## Analyse the performances of the best model
+
+We propose a simple algorithm to evaluate how sensitive the model is to particular words, by grading one-word essays: we call this grade _importance_. To compute the importance of each word, execute the following command :
+```
+cd bin
+python3 run_evaluation.py --train_file 'train_x.tsv' --checkpoint_name '000001' --model_name 'fold0_weights.pth' --vocab_name 'vocab.pkl' --remove_stopwords --normalize_scores --correct_spelling --use_features --scale_features --device 'cuda' --batch_size 16
+cd ..
+```
+__Note:__ The argument `--checkpoint_name` should be the name of the folder containing the weights, the vocabulary dictionary, and the scaler.
+
+The output should be in the folder `outputs/[checkpoint_name]`. Now, you can execute the following command to compute the data presented in the "Results" section of the report :
+
+```
+cd bin
+python3 analyse_words.py --checkpoint_name '000001'
+cd ..
+```
+The output should be in `outputs/[checkpoint_name]/processed`.
+
 ## References
 
 [1] T. Mikolov, K. Chen, G. Corrado, and J. Dean, Efficient estimation of word representations in vector space, arXiv preprint, 2013.
