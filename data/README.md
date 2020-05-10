@@ -25,23 +25,16 @@ __Write a letter to your local newspaper in which you state your opinion on the 
 ## Description
 |Field|Value|
 |-|-|
-|Type of essay:			   		|Persuasive/ Narrative/Expository			 |
-|Grade level:			   		|10											 |
-|Training set size:		   		|1,800 essays								 |
-|Final evaluation set size:		|600 essays									 |
-|Average length of essays: 		|350 words									 |
-|Scoring:				   		|R1D1 (Reader 1 Domain 1 Score), R1D2 (Reader| 
-|								|1 Domain 2 Score), R2D1 (Reader 2 Domain 1  |
-|								|Score), R2D2 (Reader 2 Domain 2 Score),	 | 
-|								|D1_Resolved, D2_Resolved					 |
-|Domain 1 (Writing Applications)|1-6										 |
-|Rubric range:					|											 |
-|Domain 2 (Language Conventions)|1-4										 |
-|Rubric range:					|											 |
-|Domain 1 (Writing Applications)|1-6										 |
-|Final score range:				|											 |
-|Domain 2 (Language Conventions)|1-4										 |
-|Final score range:				|											 |
+|Type of essay:			   		|Persuasive/ Narrative/Expository			 
+|Grade level:			   		|10											 
+|Training set size:		   		|1,800 essays								 
+|Final evaluation set size:		|600 essays									 
+|Average length of essays: 		|350 words									 
+|Scoring:				   		|R1D1 (Reader 1 Domain 1 Score), R1D2 (Reader 1 Domain 2 Score), R2D1 (Reader 2 Domain 1 Score), R2D2 (Reader 2 Domain 2 Score), D1_Resolved, D2_Resolved
+|Domain 1 (Writing Applications) Rubric range:|1-6
+|Domain 2 (Language Conventions) Rubric range:|1-4
+|Domain 1 (Writing Applications) Rubric range:|1-6
+|Domain 2 (Language Conventions) Final Score range|1-4
 
 ## Essay prompt
 Censorship in the Libraries
