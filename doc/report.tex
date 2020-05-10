@@ -16,6 +16,7 @@
 \usepackage{subcaption}
 \usepackage{float}
 \usepackage{fancyvrb}
+\usepackage{stmaryrd}
 \newcommand{\infra}{\emph{infra}}
 \newcommand{\TODO}{\fbox{\textcolor{red}{TODO}}}
 
@@ -210,13 +211,20 @@ The scoring fields are missing in the validation and test sets. However, we abso
 \paragraph{Additional features} In the raw dataset, the only features we can use for prediction are the set number and the raw ASCII text. As described in Section~\ref{pos:extrafeats}, we start by enriching the dataset with extra features we compute from the text itself. The enriched dataset is generally denoted with the suffix \verb|_x| in our files, and is the one we use for prediction.
 \subsection{Validation metrics}
 \label{validation}
-\TODO{présentation de la loss MSE}
-\TODO{présentation du quadratic weighted kappa}
-%dire que c'est la métrique que tout le monde utilise (dans le challenge aussi)
-%on prend la somme pondérée du Quadratic Weighted Kappa pour chaque type d'essai (1 à 8) pour avoir la valeur finale
-%on peut s'inspirer de
-%https://cs224d.stanford.edu/reports/huyenn.pdf
-%par ex
+
+We train our models using the Mean Squared Error (MSE) loss which is a commonly used loss for regression. It is the sum of the squared distances between our target variable (scores given by examinators) and predicted values (scores outputted by our neural network). During the training process the weights of the neural network are adapted so as to minimize this loss.
+
+Grading methods being different for each essay set, the MSE loss is not the most accurate metric to assess the performance of the model. For this reason it was decided during the Kaggle competition to compare submissions according to another validation metric: the quadratic weighted kappa. This metric captures the inter-rater reliability for qualitative items which are, in our case, the scores given by the true examiners and our AI examiners. To be able to use this metric, scores have to be reshaped to their original discrete values. That is because this metric take as input categorical items. The robustness of the kappa statistic comes down to its ability to account the possibility of the agreement occurring by chance. The quadratic weighted kappa is defined by:
+\begin{equation}
+\kappa = 1 - \frac{\langle{W},{O}\rangle}{\langle{W},{E}\rangle}
+\end{equation}
+It this equation $\langle\cdot,\cdot\rangle$ represents the scalar product between matrices. For scores ranging from $1,2..,N$, the weight matrix is defined by:
+\begin{equation}
+W = (W_{i, j})_{(i,j) \in \llbracket 1, N \rrbracket^2}=\left(\frac{(i-j)^2}{(N-1)^2}\right)_{(i,j) \in \llbracket 1, N \rrbracket^2}
+\end{equation}
+$O_{i, j}$ is the number of essays that were rated $i$ by the true examiner and rating $j$ by the AI examiner.
+E is an N-by-N histogram matrix of expected ratings (the outer product of each examiner's histogram of ratings). It is normalized so that $E$ and $O$ have the same sum.
+The quadratic weighted kappa ranges from $-1$ to $1$ where $1$ is reached when ratings for both examiners match perfectly. Values above $0.6$ are considered to be really good scores (according to Kaggle competition guidelines).
 
 \subsection{Experimental protocol}
 To compare all the configurations we use 5-fold cross-validation on the training data (for each fold the training data is split into subtraining and subvalidation sets)
@@ -313,10 +321,10 @@ The previous section shows that our best performing model has the dense architec
 \vspace*{-1.5cm}
 \end{center}
 
-\paragraph{Words sensitivity analysis} We propose here a simple idea to analyse the sensitivity of our model to particular keywords. We recall from Section~\ref{pos:densearchi} that the dense model starts by averaging all of the embeddings of the essay, and thakes this mean embedding as the input of the dense layers. Hence, it is very easy to feed only one word to the model. Heuristically, this corresponds to automatically grading the essay composed of this sole word. By doing that for all words in the vocabulary, we can map a grade to each word, and analyze this grade as the importance given by the algorithm to this word.
+\paragraph{Words sensitivity analysis} We propose here a simple idea to analyse the sensitivity of our model to particular keywords. We recall from Section~\ref{pos:densearchi} that the dense model starts by averaging all of the embeddings of the essay, and takes this mean embedding as the input of the dense layers. Hence, it is very easy to feed only one word to the model. Heuristically, this corresponds to automatically grading the essay composed of this sole word. By doing that for all words in the vocabulary, we can map a grade to each word, and analyze this grade as the importance given by the algorithm to this word.
 \subparagraph{Caveat - a word on extra features} This simple reasoning is only valid if the only input to the model is the essay's mean embedding. As a matter of fact, our model also requires the extra features described in Section~\ref{pos:extrafeats}. To make the model operate near its training zone and have meaningful results, we do the following : for each set, set each extra feature to its mean value across the set, and feed the embedding of the word as the input. The output of this algorithm is, for each word, a set of grades. However, it is now \emph{wrong} to interpret these grades as "the grade given by the algorithm for essay set number $k$ to the essay consisting of the sole keyword". We will keep that in mind, but neglect it in the analysis.
 \subparagraph{Grades of one-word essays} The results of this algorithm are shown in Figure~\ref{fig:onewordessays}. Very interestingly, one can see that it is possible to totally fool the algorithm with essays composed of only one particularly well-chosen word. While being unsurprising, this result shows that the algorithm is not very robust and is very susceptible to adversarial attacks, and hence not suited to be used in real-world applications.\newline
-We can further investigate this figure by noting that the shape of the importance profile of Figure~\ref{fig:importance} does not seem to be correlated with performance. Indeed, Sets 1 and 2 have very similar curves, yet the model performs very differently on these two tasks (see Figure~\ref{fig:individualperf}. \newline
+We can further investigate this figure by noting that the shape of the importance profile of Figure~\ref{fig:importance} does not seem to be correlated with performance. Indeed, Sets 1 and 2 have very similar curves, yet the model performs very differently on these two tasks (see Figure~\ref{fig:individualperf}). \newline
 Interestingly, it appears that the model is able to identify more more words that matter only for these topics for Sets 1, 2 and 8 : excluding set 7, these are the sets corresponding to argumentative tasks (Table~\ref{setsdescription}). Once again, this is not correlated with performance, as it can be seen on Figure~\ref{fig:individualperf}.
 
 \begin{figure}
